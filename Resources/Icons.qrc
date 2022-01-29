@@ -1,0 +1,20 @@
+<RCC>
+  <qresource prefix="icons">
+    <file>Icons/airplay_1.svg</file>
+    <file>Icons/align-left.svg</file>
+    <file>Icons/arrow-down-left.svg</file>
+    <file>Icons/cast.svg</file>
+    <file>Icons/chevron-left.svg</file>
+    <file>Icons/circle.svg</file>
+    <file>Icons/Eraser.png</file>
+    <file>Icons/Laser.png</file>
+    <file>Icons/Line.png</file>
+    <file>Icons/Pen.png</file>
+    <file>Icons/Shapes.png</file>
+    <file>Icons/square_1.svg</file>
+    <file>Icons/Text.png</file>
+    <file>Icons/video.svg</file>
+    <file>Icons/video-off.svg</file>
+    <file>Icons/x.svg</file>
+  </qresource>
+</RCC>
