@@ -41,10 +41,13 @@ The program works on varius hand gestures. These are explained below:
 ![Single Finger Click](https://user-images.githubusercontent.com/56196449/160415897-b31e6eb9-436f-43fa-a121-c397b02a20ea.gif)
 
 2. Index Finger drag : To draw on the canvas
+
 3. Index And Middle finger drag : To Move the mouse inside the GUI.
+
 ![Mouse Tracking GIF](https://user-images.githubusercontent.com/56196449/160416168-56ee1921-dcb4-4943-a40a-d44bafcac8bc.gif)
 
 4. Index and Middle finger click : To simulate mouse click, to click the GUI buttons.
+
 ![Mouse Click](https://user-images.githubusercontent.com/56196449/160416350-13fd88e8-de18-4c4a-a09a-ac6a1d1b61c6.gif)
 
 5. Index finger and thumb pan : To change the draawing size of the tool.
@@ -52,6 +55,7 @@ The program works on varius hand gestures. These are explained below:
 ![Size Change](https://user-images.githubusercontent.com/56196449/160416588-ee70077e-a1a6-40de-a3cb-86a1d46bcdae.gif)
 
 6. Fist drag : To scroll the canvas.
+
 ![Canvas Move](https://user-images.githubusercontent.com/56196449/160416701-ff78c8d3-8208-4a50-8f91-cc5c31abc715.gif)
 
 ## Working Demo : 
