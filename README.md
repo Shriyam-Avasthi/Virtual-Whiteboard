@@ -8,7 +8,7 @@ For the program to run properly followin installation instructions should be fol
 Or, run the command:
   `pip install -r /path/to/requirements.txt` 
  
-**Note: The following steps are required only if you want to broadcast the output to other softwares. To just use this program, without broadcasting the output, above two steps are all what you need to follow.**
+**Note: The following steps are required only if you want to broadcast the output to other softwares. To just use this program, without broadcasting the output, above two steps are all what you need to get started.**
 
 3. Install [OBS Studio](https://obsproject.com/) for your operating system then follow the following instructions to set up virtual camera.
 #### Setting Up Virtual Camera in OBS (To use the output in other softwares):
