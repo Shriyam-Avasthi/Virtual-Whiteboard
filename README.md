@@ -3,7 +3,7 @@
 A python project to draw on live video captured from the webcam(or any other camera) and broadcast it to a virtual camera via OBS Studio.
 
 ## Demo
-<iframe width="560" height="315" src="https://www.youtube.com/embed/i-tAN5yTxr8?start=5" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+You can find the project's demo at my youtube page [here](https://www.youtube.com/watch?v=i-tAN5yTxr8).
 
 ## Installation Instructions:
 For the program to run properly followin installation instructions should be followed:
