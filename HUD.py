@@ -1,5 +1,3 @@
-import cv2
-import os
 import numpy as np
 from Tools import ToolsManager
 class HUDManager():
@@ -12,7 +10,6 @@ class HUDManager():
         else:
             HUDManager.shared_instance = self
 
-        print(imgShape)
         HCAM , WCAM = 1080 , 1920
         self.widthScale = imgShape[1] / WCAM
         self.heightScale = imgShape[0] / HCAM
@@ -26,7 +23,7 @@ class HUDManager():
 
     @staticmethod
     def GetInstance():
-        if HUDManager.share_instance == None:
+        if HUDManager.shared_instance == None:
             return None 
         return HUDManager.shared_instance
 
