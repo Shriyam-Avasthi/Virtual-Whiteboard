@@ -1,31 +1,26 @@
-import cv2
 import math
 import numpy as np
 import time
 from ui_GUI import *
-import sys
-# from MultiThreading import Signals
 from Tools import ToolsManager
 from HUD import HUDManager
-from PySide2.QtCore import Signal , Slot , Qt 
+from PySide2.QtCore import Signal
 
 
 class CanvasMover():
     def __init__(self , whiteboard):
         self.startPoint = (0,0)
-        self.Active = False
+        self.isUsed = False
         self.whiteboard = whiteboard
         self.scrollSpeed = 10
         self.minScrollDelta = 10
         self.minScrollTime = 1/self.scrollSpeed
         self.lastScrollTimeElapsed = 0
         self.cTime = time.time()
-
         self.maxPos = ( whiteboard.wholeCanvas.shape[0] - whiteboard.canvas.shape[0] , whiteboard.wholeCanvas.shape[1] - whiteboard.canvas.shape[1] )
-        print("mP" , self.maxPos)
 
     def Use(self ):
-
+        
         def Signum(n , threshold):
             if n > threshold :
                 return n - threshold
@@ -42,7 +37,6 @@ class CanvasMover():
                 if newCanvasStartPoint[0] >= 0 and newCanvasStartPoint[1] >= 0 and newCanvasStartPoint[1] < self.maxPos[0] and newCanvasStartPoint[0] < self.maxPos[1]:
                     self.whiteboard.currentCanvasStartPoint = newCanvasStartPoint
                     self.whiteboard.canvas = self.whiteboard.wholeCanvas[ newCanvasStartPoint[1] : newCanvasStartPoint[1] + canvasShape[0] , newCanvasStartPoint[0] : newCanvasStartPoint[0] + canvasShape[1] , :]
-                print("sP" , self.whiteboard.currentCanvasStartPoint)
                 self.lastScrollTimeElapsed = 0
             cTime = time.time()
             self.lastScrollTimeElapsed += cTime - self.cTime
@@ -55,7 +49,7 @@ class CanvasMover():
 class Signals(QObject):
     shared_instance = None
     change_pixmap_signal = Signal(np.ndarray)
-    changeToolSize_signal = Signal(int)
+    changeToolSize_signal = Signal(int)  
     moveMouse_signal = Signal(bool , list)
     changeStatus_signal = Signal(str)
 
@@ -78,13 +72,14 @@ class WhiteBoard():
     shared_instance = None
 
     def __init__(self ,  VideoShape=(HCAM, WCAM, 3)):
-        
+
+        # Singleton Pattern
         if WhiteBoard.shared_instance != None:
             raise Exception("Cannot create another instance as WhiteBoard is a singleton class and it should have only onle instance!!! ")
         else :
             WhiteBoard.shared_instance = self
         
-
+        # Initialize
         self.wholeCanvas = np.zeros( (VideoShape[0] * 20 , VideoShape[1] * 20 , VideoShape[2] ), dtype=np.uint8)
         self.currentCanvasStartPoint = (0 , 0)
         self.canvas = self.wholeCanvas[ : VideoShape[0] , : VideoShape[1] , :]
@@ -92,7 +87,6 @@ class WhiteBoard():
         self.canvasMover = CanvasMover(self)
         self.hudImg =  np.zeros(VideoShape, dtype=np.uint8) 
         self.SizeChangeSignal = Signal(int)       
-        # self.shapeLayer = np.zeros(canvasShape , dtype = np.uint8)
         self.Manager = ToolsManager( self )  
         self.hud = HUDManager(self.hudImg.shape)
         self.lastClickTimeElapsed = 0.5
@@ -119,6 +113,7 @@ class WhiteBoard():
 
         upIndices = [i for i in range(len(fingersUp)) if fingersUp[i] == 1]
 
+        # Change Use modes and tools according to the number of fingers which are open.
         if len(upIndices) == 0:
             self.Manager.StopUse()
             self.canvasMover.Use()
@@ -129,7 +124,6 @@ class WhiteBoard():
             if upIndices[0] == 1:
                 self.Manager.UseCurrentTool()
                 self.sizeChangeTimeElapsed = 0           
-                # print("WB" , hex(id(self.canvas)))
 
             if(self.GetDistance(lmList[8][1:] , lmList[5][1:]) < self.clickDist):
                 if (not self.clicked):
@@ -159,8 +153,6 @@ class WhiteBoard():
                     
 
             elif(upIndices[0] == 1 and upIndices[1] == 2):
-                # self.hud.DrawMainHUD(self.hudImg , lmList[8][1:3])
-                # self.prev_xpos , self.prev_ypos = lmList[8][1:]
                 if(self.GetDistance(lmList[8][1:] , lmList[5][1:]) < self.clickDist):
                     clicked = True
                 else:
@@ -171,24 +163,11 @@ class WhiteBoard():
                     Signals.GetInstance().moveMouse_signal.emit( clicked , lmList[12][1:])
                     self.lastMouseMoveTimeElapsed = 0
 
-                # if self.lastClickTimeElapsed >= 0.5 and self.clicked:
-                #     self.Manager.OnClickUp()
-                #     self.lastClickTimeElapsed = 0
             elif upIndices[0] == 1 and upIndices[1] == 4 :
-                # if self.lastClickTimeElapsed >= 0.5 and self.clicked:
-                #     self.Manager.OnClickUp()
-                #     self.lastClickTimeElapsed = 0
-                #     self.clicked = False
                 self.Manager.OnSecondaryClick()
             
         else:
             self.canvasMover.isUsed = False
-
-            # if self.lastClickTimeElapsed >= 0.5 and self.clicked:
-            #     self.Manager.OnClickUp()
-            #     self.lastClickTimeElapsed = 0
-            #     self.clicked = False
-
         self.cTime = cTime
 
     def GetDistance(self, point1 , point2):
@@ -200,80 +179,3 @@ class WhiteBoard():
     
     def DestroyKeyboard(self):
         self.hud.DestroyKeyboard(self.hudImg)
-
-    # @Slot(np.ndarray)
-    # def update_image(self, img):
-    #     """Updates the image_label with a new opencv image"""
-    #     self.gui.ShowFrame(img)
-    
-# def main():
-    
-#     app = GUIThread().start()
-#     videoGet = VideoGet().start()
-#     # videoGet.start()
-#     processHands = ProcessHands(videoGet.frame).start()
-
-#     whiteBoard = WhiteBoard(canvasShape=videoGet.frame.shape)
-#     videoShow = VideoShow()#.start(videoGet.frame.shape)
-#     videoShow.start()
-
-#     pTime = 0
-#     cTime = 0
-    
-#     videoShow.signal.change_pixmap_signal.connect(whiteBoard.update_image)
-
-#     while True:
-#         print("OOO")
-
-#         success, img = videoGet.success, videoGet.frame
-
-#         if(success):
-
-#             handDetector = processHands.handDetector
-
-#             if processHands.processedImg is not None:
-#                 img = processHands.processedImg.copy()
-#             processHands.img = videoGet.frame.copy()
-
-#             if handDetector.results is not None:
-#                 handedness = handDetector.GetHandedness()
-#                 # print(len(handedness))
-#                 if(len(handedness) == 1):
-#                     lmList = handDetector.FindPosition(img)
-#                     fingersUp  = handDetector.GetFingersUp(lmList, handedness)
-#                     whiteBoard.CallAppropriateMethod(fingersUp , lmList)
-                    
-
-#             cTime = time.time()
-#             if cTime != pTime:
-#                 fps = 1//(cTime - pTime)
-#             else:
-#                 fps = "Infinite"
-
-#             pTime = cTime
-
-#             if img is not None:
-
-#                 img = cv2.flip(img, 1)
-#                 cv2.putText(img, f"FPS: {fps}", (400, 400),
-#                             cv2.FONT_HERSHEY_COMPLEX, 1, (255, 0, 0), 3)
-#                 # whiteBoard.gui.ShowVideo(img)
-#                 videoShow.images = [img, cv2.flip(whiteBoard.canvas.copy(), 1) , (whiteBoard.hudImg.copy() ) ]
-
-                
-
-#             if not videoGet.running or not videoShow.running:
-#                 videoGet.Stop()
-#                 videoShow.Stop()
-#                 processHands.Stop()
-#                 cv2.destroyAllWindows()
-#                 break
-            
-
-            
-
-#             # time.sleep(1/120)
-
-
-# if __name__ == '__main__':
-#     main()

@@ -1,6 +1,4 @@
 import cv2
-import numpy as np
-import time
 import math
 
 class ToolsManager():
@@ -8,6 +6,7 @@ class ToolsManager():
 
     def __init__(self , whiteboard):
 
+        # Singleton Pattern
         if ToolsManager.shared_instance != None:
             raise Exception("Cannot create another instance as ToolsManager is a singleton class and it should have only onle instance!!! ")
         else :
@@ -32,6 +31,7 @@ class ToolsManager():
         self.tools[self.currentToolID].Use()
 
     def SetCurrentTool(self , id):
+        # Stop Using previous tool and start using the selected tool
         self.tools[self.currentToolID].StopUse()
         if id < len(self.tools):
             self.currentToolID = id  
@@ -84,6 +84,7 @@ class ToolsManager():
 
 class Pen():
     def __init__(self , whiteboard):
+        # Initialize
         self.prev_xpos , self.prev_ypos = (0,0)
         self.color = (0,0,255)
         self.thickness = 5
@@ -92,8 +93,10 @@ class Pen():
 
     def Use(self ) :
         if not self.isUsed:
+            # Update previous position of the pen
             self.prev_xpos , self.prev_ypos = self.wb.currentLmList[8][1:]
         else:
+            # Draw
             fingerPos = self.wb.currentLmList[8][1:]
             cv2.line(self.wb.canvas, (self.prev_xpos, self.prev_ypos),
                     (fingerPos[0], fingerPos[1]), self.color , self.thickness, cv2.LINE_AA)
@@ -103,6 +106,7 @@ class Pen():
         pass
 
     def OnClickUp(self):
+        # Toggle use state
         if self.isUsed :
             self.isUsed = False
         else:
@@ -115,10 +119,12 @@ class Pen():
         self.isUsed = False
 
     def OnSecondaryClick(self ):
+        # To break the ink and to let the user shift to another position for drawing
         self.prev_xpos , self.prev_ypos = self.wb.currentLmList[8][1:]
 
 class Eraser():
     def __init__(self , whiteboard ):
+        # Initialize
         self.prev_xpos , self.prev_ypos = (0,0)
         self.thickness = 5
         self.wb = whiteboard
@@ -127,6 +133,7 @@ class Eraser():
         
     def Use(self):
         if not self.isUsed:
+            # Update previous position of the eraser
             self.prev_xpos , self.prev_ypos = self.wb.currentLmList[8][1:]
         else:
             fingerPos = self.wb.currentLmList[8][1:]
@@ -141,6 +148,7 @@ class Eraser():
         pass
 
     def OnClickUp(self):
+        # Toggle use state
         if self.isUsed :
             self.isUsed = False
         else:
@@ -154,6 +162,7 @@ class Eraser():
 
 class Shapes():
     def __init__(self , whiteboard):
+        # Initialize
         self.startPoint = (0,0)
         self.shapeID = 0
         self.thickness = 10
@@ -164,17 +173,19 @@ class Shapes():
 
     def Use(self):
         if not self.isUsed:
+            # Update the local copy of the canvas and the starting position of the shape 
             self.startPoint = self.wb.currentLmList[8][1:]
             self.canvasCopy = self.wb.canvas.copy()
 
         else:
             fingerPos = self.wb.currentLmList[8][1:]
+            # To draw the shape according to the current finger position, we have to remove the shape drawn in the previous frame 
+            # and draw the shape again according to the current finger position
             if self.shapeID == 0:
                 center = ( ( self.startPoint[0] + fingerPos[0] ) // 2 , ( self.startPoint[1] + fingerPos[1] ) // 2)
                 radius = int(math.dist(center , fingerPos))
                 
                 self.wb.canvas[: , : , :] = cv2.circle( self.canvasCopy.copy() , center , radius , self.color , self.thickness )
-                # print("TOOL" , hex(id(canvas)))
 
             elif self.shapeID == 1:                
                 self.wb.canvas[: , : , :] = cv2.line( self.canvasCopy.copy() , self.startPoint , fingerPos , self.color , self.thickness )
@@ -187,11 +198,9 @@ class Shapes():
                 self.shapeID = 1
     
     def OnClickDown(self):
-        print("down")
         pass
 
     def OnClickUp(self):
-        print("Up")
         if self.isUsed :
             self.isUsed = False
         else:
@@ -208,6 +217,7 @@ class Shapes():
 
 class Text():
     def __init__(self , whiteboard , startPoint = (0,0) , size = 3 ,color = [0,0,255]):
+        # Initialize
         self.startPoint = startPoint
         self.size = size
         self.color = color
@@ -217,11 +227,17 @@ class Text():
         self.wb = whiteboard
     
     def Use(self):
+        # If in use
         if self.isUsed:
+            # if the finger is on a key, then change the key's color to green
             self.keyboard.activeKey = self.keyboard.FindActiveKey( self.wb.currentLmList[8][1:] )
             if not self.clickedDown and self.keyboard.activeKey is not None:
                 self.keyboard.activeKeyColor = (0 , 255 , 0)
+
             self.wb.DrawKeyboard()
+            # Write the text written with the keyboard on the selected position of the canvas with a cursor "|" at the end 
+            # and within the a rectangle to show that the person is still writing.
+
             text = ""
             for i in self.keyboard.text:
                 text += i
@@ -231,14 +247,17 @@ class Text():
             canvas = cv2.rectangle(self.canvasCopy.copy()  ,rectPt1 , rectPt2 , self.color , 5 ) 
             self.wb.canvas[:,:,:] = cv2.flip(cv2.putText(canvas , text , (self.keyboard.frameWidth - self.startPoint[0] , self.startPoint[1]) , cv2.FONT_HERSHEY_PLAIN, self.size , self.color , 3 ) , 1)
         else:
+            # update the copy of the canvas
             self.canvasCopy = cv2.flip(self.wb.canvas.copy() , 1)
             self.keyboard.text = []
         
     def OnClickDown(self ):
+        # if it is not used then start using
         self.clickedDown = True
-        if not self.isUsed:
+        if not self.isUsed:   
                 self.startPoint = self.wb.currentLmList[8][1:]
                 self.isUsed = True
+        # if it is used then find the key which was pressed and and change its color to red
         else:
             kb = self.keyboard
             if kb.activeKey is not None:
@@ -249,14 +268,17 @@ class Text():
             self.clickedDown = False
             kb = self.keyboard
             if kb.activeKey is not None:
+                # if return button is not pressed
                 if kb.activeKey.text != "->":
+                    # find the key that was pressed and add its text to the keyboard
                     kb.AddText( kb.activeKey.text)
                 else:
                     self.OnClickReturn()
 
     def OnClickReturn(self):
         if self.isUsed and self.wb.currentLmList is not None :
-            self.keyboard.activeKey = self.keyboard.FindActiveKey( self.wb.currentLmList[8][1:] )
+            # self.keyboard.activeKey = self.keyboard.FindActiveKey( self.wb.currentLmList[8][1:] )
+            # Add the text to the canvas without rectangle and cursor "|" to show that the user has finished writing
             text = ""
             for i in self.keyboard.text:
                 text += i
@@ -278,6 +300,7 @@ class Keyboard():
 
     class Button():
         def __init__(self, posStart , text,size = [50 , 50] , color = (255,0,255)):
+            # Initialize
             self.size = size
             self.posStart = posStart
             self.posEnd = ( (self.posStart[0] + self.size[0]) , (self.posStart[1] + self.size[1]) )
@@ -372,7 +395,7 @@ class Laser():
         self.thickness = size
     
     def StopUse(self):
-        if self.canvasCopy :
+        if len(self.canvasCopy) != 0 and self.isUsed :
             self.wb.canvas[ : , : , : ] = self.canvasCopy
         self.isUsed = False
     

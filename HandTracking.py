@@ -3,26 +3,7 @@ import mediapipe as mp
 import time
 import numpy as np
 from google.protobuf.json_format import MessageToDict
-
-class SelfieSegmentor():
-    def __init__(self , model = 1):
-        self.model = model 
-        self.mp_selfie_segmentation = mp.solutions.selfie_segmentation
-        self.selfieSegmentation = self.mp_selfie_segmentation.SelfieSegmentation(self.model)
-    
-    def RemoveBG(self , img , bgColor = [0,0,0] , threshold = 0.1):
-        imgRGB = cv2.cvtColor(img , cv2.COLOR_BGR2RGB)
-        results = self.selfieSegmentation.process(imgRGB)
-        condition = np.stack(
-            (results.segmentation_mask,) * 3, axis=-1) > threshold
-    
-        bg_image = np.zeros(img.shape, dtype=np.uint8)
-        bg_image[:] = bgColor
-        output_image = np.where(condition, img, bg_image)
-        return output_image
-
-        
-
+  
 class HandDetector():
 
     def __init__(self, mode = False , maxHands = 1 , detectionCon = 0.5 , trackCon = 0.5):
@@ -30,16 +11,15 @@ class HandDetector():
         self.maxHands = maxHands
         self.detectionCon = detectionCon
         self.trackCon = trackCon
-    
+
+        # Access the mediapipe hands API
         self.mpHands = mp.solutions.hands
         self.hands = self.mpHands.Hands(self.mode , self.maxHands , self.detectionCon , self.trackCon)
         self.mpDraw = mp.solutions.drawing_utils
         self.fingerTips = [ 4 , 8 , 12 , 16 , 20 ]
         self.results = None
-        self.segmentor = SelfieSegmentor()
 
     def DrawHands(self , img , draw = True):
-        # imgBgRemoved = self.segmentor.RemoveBG(img)
         imgRGB = cv2.cvtColor(img , cv2.COLOR_BGR2RGB)
         self.results = self.hands.process(imgRGB)
         if (self.results.multi_hand_landmarks):
@@ -51,6 +31,7 @@ class HandDetector():
     def GetHandedness(self):
         handedness = []
         if(self.results.multi_handedness):
+            # Access the Message to dict function from google.protobuf.json_format to decode the message to identify the hand as Left or Right
             for id , h in enumerate(self.results.multi_handedness):
                 handedness_dict = MessageToDict(h)
                 handedness.append(handedness_dict["classification"][0]["label"])
@@ -59,11 +40,9 @@ class HandDetector():
     def FindPosition(self, img ,  handNo = 0 , draw = True):
         lmList = []
         if (self.results.multi_hand_landmarks):
-            if(len(self.results.multi_hand_landmarks) > handNo):
+            if(len(self.results.multi_hand_landmarks) >= handNo):
                 myHand = self.results.multi_hand_landmarks[handNo]
                 for id,lm in enumerate(myHand.landmark):
-                    # print(id,lm)
-
                     h , w, c = img.shape
                     cx , cy = int(lm.x * w) , int(lm.y * h)
                     lmList.append([id,cx,cy])
@@ -86,7 +65,7 @@ class HandDetector():
                 #For Fingers
                 
                 for id in self.fingerTips[1:5]:
-                    if( lmList[id][2] < lmList[id - 2][2] ):
+                    if( lmList[id][2] < lmList[id - 3][2] ):
                         fingersUp.append(1)
                     else:
                         fingersUp.append(0)
@@ -109,9 +88,7 @@ class HandDetector():
 
         return fingersUp
 
-def main():
-    pTime = 0
-    cTime = 0   
+def main():   
     cap = cv2.VideoCapture(0)
     detector = HandDetector()
     while True:
@@ -119,15 +96,6 @@ def main():
         if success:
             img = cv2.flip(img , 1)
             img = detector.DrawHands(img)
-            # lmList = detector.FindPosition(img)
-            # if len(lmList) != 0:
-                # print(lmList[4])
-            cTime = time.time()
-            fps = 1/(cTime-pTime)
-            pTime = cTime
-            # handedness = detector.GetHandedness()
-            cv2.putText(img , str(int(fps)) , (10,70) , cv2.FONT_HERSHEY_PLAIN , 3,(255,0,255) , 3)
-
             cv2.imshow("Video" , img)
         if cv2.waitKey(1) == ord("q"):
             break
