@@ -1,6 +1,10 @@
 # Virtual-Whiteboard
 ## Description
 A python project to draw on live video captured from the webcam(or any other camera) and broadcast it to a virtual camera via OBS Studio.
+
+## Demo
+<iframe width="560" height="315" src="https://www.youtube.com/embed/i-tAN5yTxr8?start=5" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+
 ## Installation Instructions:
 For the program to run properly followin installation instructions should be followed:
 1. Clone the repository to the desired path.
@@ -58,5 +62,3 @@ The program works on varius hand gestures. These are explained below:
 
 ![Canvas Move](https://user-images.githubusercontent.com/56196449/160416701-ff78c8d3-8208-4a50-8f91-cc5c31abc715.gif)
 
-## Working Demo : 
-The demo to this project can be found at my [Youtube page](https://youtu.be/i-tAN5yTxr8).
