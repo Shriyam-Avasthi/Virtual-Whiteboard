@@ -5,6 +5,7 @@ from ui_GUI import *
 from Tools import ToolsManager
 from HUD import HUDManager
 from PySide2.QtCore import Signal
+import cv2
 
 
 class CanvasMover():
@@ -149,8 +150,6 @@ class WhiteBoard():
                     size = np.interp(int(length) , [ 40/180 * palmLength , 200/180 * palmLength ] , [5,25])
                     self.Manager.SetCurrentToolSize(int(size))
                     Signals.GetInstance().changeToolSize_signal.emit(int(size))
-                    
-                    
 
             elif(upIndices[0] == 1 and upIndices[1] == 2):
                 if(self.GetDistance(lmList[8][1:] , lmList[5][1:]) < self.clickDist):
@@ -165,6 +164,9 @@ class WhiteBoard():
 
             elif upIndices[0] == 1 and upIndices[1] == 4 :
                 self.Manager.OnSecondaryClick()
+
+            elif upIndices[0] == 3 and upIndices[1] == 4 :
+                cv2.imwrite("Screenshot.jpeg", cv2.flip(self.canvas , 1) )
             
         else:
             self.canvasMover.isUsed = False
