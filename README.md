@@ -1,6 +1,6 @@
 # Virtual-Whiteboard
 ## Description
-A Python project to draw on live video captured from the webcam(or any other camera) and broadcast it to a virtual camera via OBS Studio.
+A Python program to draw on live video captured from the webcam(or any other camera) using hand gestures and broadcast it to a virtual camera via OBS Studio.
 
 ## Demo
 You can find the project's demo at my YouTube page [here](https://www.youtube.com/watch?v=i-tAN5yTxr8).
